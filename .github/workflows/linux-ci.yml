@@ -25,7 +25,6 @@ jobs:
       - run: sleep 10
 
       - uses: LouisBrunner/checks-action@v1.6.1
-        id: create_check
         with:
           token: ${{ steps.generate_token.outputs.token }}
           status: in_progress
