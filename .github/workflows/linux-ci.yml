@@ -27,7 +27,6 @@ jobs:
       - uses: LouisBrunner/checks-action@v1.6.1
         with:
           token: ${{ steps.generate_token.outputs.token }}
-          status: in_progress
           check_id: ${{ steps.create_check.outputs.check_id }}
           conclusion: success
           sha: cabd427159f00e53b7f9b94d8e8d913971a3f289
