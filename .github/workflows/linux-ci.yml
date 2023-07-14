@@ -17,6 +17,7 @@ jobs:
       - uses: LouisBrunner/checks-action@v1.6.1
         with:
           token: ${{ steps.generate_token.outputs.token }}
-          status: in_progress
-          name: Hello world
+          conclusion: success
+          # status: in_progress
+          check_id: Hello world
           sha: cabd427159f00e53b7f9b94d8e8d913971a3f289
