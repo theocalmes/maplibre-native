@@ -15,9 +15,11 @@ jobs:
           private_key: ${{ secrets.MAPLIBRE_NATIVE_BOT_PRIVATE_KEY }}
 
       - uses: LouisBrunner/checks-action@v1.6.1
+        id: create_check
         with:
           token: ${{ steps.generate_token.outputs.token }}
-          conclusion: success
-          # status: in_progress
-          check_id: Hello world
+          status: in_progress
+          name: Hello world
           sha: cabd427159f00e53b7f9b94d8e8d913971a3f289
+
+      - run: echo ${{ steps.create_check.outputs.check_id }}
