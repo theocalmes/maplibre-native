@@ -28,7 +28,9 @@
 #include <mbgl/gfx/symbol_drawable_data.hpp>
 #include <mbgl/renderer/layer_group.hpp>
 #include <mbgl/renderer/layers/symbol_layer_tweaker.hpp>
+#include <mbgl/shaders/mtl/symbol_sdf.hpp>
 #include <mbgl/shaders/shader_program_base.hpp>
+#include <mbgl/shaders/symbol_layer_ubo.hpp>
 #endif // MLN_DRAWABLE_RENDERER
 
 #include <cmath>
@@ -37,16 +39,9 @@
 namespace mbgl {
 
 using namespace style;
+using namespace shaders;
+
 namespace {
-
-#if MLN_DRAWABLE_RENDERER
-
-constexpr std::string_view SymbolIconShaderName = "SymbolIconShader";
-constexpr std::string_view SymbolSDFIconShaderName = "SymbolSDFTextShader";
-constexpr std::string_view SymbolSDFTextShaderName = "SymbolSDFIconShader";
-constexpr std::string_view SymbolTextAndIconShaderName = "SymbolTextAndIconShader";
-
-#endif // MLN_DRAWABLE_RENDERER
 
 style::SymbolPropertyValues iconPropertyValues(const style::SymbolPaintProperties::PossiblyEvaluated& evaluated_,
                                                const style::SymbolLayoutProperties::PossiblyEvaluated& layout_) {
@@ -374,7 +369,11 @@ void RenderSymbolLayer::evaluate(const PropertyEvaluationParameters& parameters)
 
 #if MLN_DRAWABLE_RENDERER
     if (layerGroup) {
-        layerGroup->setLayerTweaker(std::make_shared<SymbolLayerTweaker>(getID(), evaluatedProperties));
+        tweaker = std::make_shared<SymbolLayerTweaker>(getID(), evaluatedProperties);
+#if MLN_RENDER_BACKEND_METAL
+        tweaker->setPropertiesAsUniforms(propertiesAsUniforms);
+#endif // MLN_RENDER_BACKEND_METAL
+        layerGroup->setLayerTweaker(tweaker);
     }
 #endif // MLN_DRAWABLE_RENDERER
 }
@@ -855,22 +854,23 @@ void RenderSymbolLayer::update(gfx::ShaderRegistry& shaders,
     // Set up a layer group
     if (!layerGroup) {
         if (auto layerGroup_ = context.createTileLayerGroup(layerIndex, /*initialCapacity=*/64, getID())) {
-            layerGroup_->setLayerTweaker(std::make_shared<SymbolLayerTweaker>(getID(), evaluatedProperties));
+            tweaker = std::make_shared<SymbolLayerTweaker>(getID(), evaluatedProperties);
+#if MLN_RENDER_BACKEND_METAL
+            tweaker->setPropertiesAsUniforms(propertiesAsUniforms);
+#endif // MLN_RENDER_BACKEND_METAL
+            layerGroup_->setLayerTweaker(tweaker);
             setLayerGroup(std::move(layerGroup_), changes);
         }
     }
 
     if (!symbolIconGroup) {
-        symbolIconGroup = shaders.getShaderGroup(std::string(SymbolIconShaderName));
+        symbolIconGroup = shaders.getShaderGroup(std::string(MLN_STRINGIZE(SymbolIconShader)));
     }
-    if (!symbolSDFIconGroup) {
-        symbolSDFIconGroup = shaders.getShaderGroup(std::string(SymbolSDFIconShaderName));
-    }
-    if (!symbolSDFTextGroup) {
-        symbolSDFTextGroup = shaders.getShaderGroup(std::string(SymbolSDFTextShaderName));
+    if (!symbolSDFGroup) {
+        symbolSDFGroup = shaders.getShaderGroup(std::string(MLN_STRINGIZE(SymbolSDFIconShader)));
     }
     if (!symbolTextAndIconGroup) {
-        symbolTextAndIconGroup = shaders.getShaderGroup(std::string(SymbolTextAndIconShaderName));
+        symbolTextAndIconGroup = shaders.getShaderGroup(std::string(MLN_STRINGIZE(SymbolTextAndIconShader)));
     }
 
     auto* tileLayerGroup = static_cast<TileLayerGroup*>(layerGroup.get());
@@ -986,6 +986,13 @@ void RenderSymbolLayer::update(gfx::ShaderRegistry& shaders,
         gfx::VertexAttributeArray attribs;
         const auto uniformProps = updateTileAttributes(buffer, isText, bucketPaintProperties, evaluated, attribs);
 
+#if MLN_RENDER_BACKEND_METAL
+        propertiesAsUniforms = uniformProps;
+        if (tweaker) {
+            tweaker->setPropertiesAsUniforms(propertiesAsUniforms);
+        }
+#endif // MLN_RENDER_BACKEND_METAL
+
         const auto textHalo = evaluated.get<style::TextHaloColor>().constantOr(Color::black()).a > 0.0f &&
                               evaluated.get<style::TextHaloWidth>().constantOr(1);
         const auto textFill = evaluated.get<style::TextColor>().constantOr(Color::black()).a > 0.0f;
@@ -1046,9 +1053,6 @@ void RenderSymbolLayer::update(gfx::ShaderRegistry& shaders,
                 builder->setVertexAttrName(posOffsetAttribName);
             }
 
-            if (!shaderGroup) {
-                return;
-            }
             const auto shader = std::static_pointer_cast<gfx::ShaderProgramBase>(
                 shaderGroup->getOrCreateShader(context, uniformProps, posOffsetAttribName));
             if (!shader) {
@@ -1101,21 +1105,21 @@ void RenderSymbolLayer::update(gfx::ShaderRegistry& shaders,
                 }
             } else {
                 if (textHalo) {
-                    draw(symbolSDFTextGroup, /* isHalo = */ true, "halo");
+                    draw(symbolSDFGroup, /* isHalo = */ true, "halo");
                 }
 
                 if (textFill) {
-                    draw(symbolSDFTextGroup, /* isHalo = */ false, "fill");
+                    draw(symbolSDFGroup, /* isHalo = */ false, "fill");
                 }
             }
         } else { // icons
             if (sdfIcons) {
                 if (iconHalo) {
-                    draw(symbolSDFIconGroup, /* isHalo = */ true, "halo");
+                    draw(symbolSDFGroup, /* isHalo = */ true, "halo");
                 }
 
                 if (iconFill) {
-                    draw(symbolSDFIconGroup, /* isHalo = */ false, "fill");
+                    draw(symbolSDFGroup, /* isHalo = */ false, "fill");
                 }
             } else {
                 draw(symbolIconGroup, /* isHalo = */ false, "icon");

@@ -10,6 +10,16 @@ constexpr auto prelude = R"(
 #include <metal_stdlib>
 using namespace metal;
 
+// The maximum allowed miter limit is 2.0 at the moment. the extrude normal is stored
+// in a byte (-128..127). We scale regular normals up to length 63, but there are also
+// "special" normals that have a bigger length (of up to 126 in this case).
+#define LINE_NORMAL_SCALE (1.0 / (127 / 2))
+
+// The attribute conveying progress along a line is scaled to [0, 2^15).
+#define MAX_LINE_DISTANCE 32767.0
+
+#define SDF_PX 8.0
+
 enum class AttributeSource : int32_t {
     Constant,
     PerVertex,
@@ -94,13 +104,6 @@ float4 colorFor(device const Attribute& attrib,
     }
 }
 
-// The maximum allowed miter limit is 2.0 at the moment. the extrude normal is stored
-// in a byte (-128..127). We scale regular normals up to length 63, but there are also
-// "special" normals that have a bigger length (of up to 126 in this case).
-constant float LINE_NORMAL_SCALE = 1.0 / (127 / 2);
-
-// The attribute conveying progress along a line is scaled to [0, 2^15).
-constant float MAX_LINE_DISTANCE = 32767.0;
 
 struct alignas(16) LineUBO {
     float4x4 matrix;
@@ -168,6 +171,70 @@ struct alignas(16) LineGradientInterpolationUBO {
     float width_t;
     float pad1, pad2, pad3;
 };
+
+
+struct alignas(16) SymbolDrawableTilePropsUBO {
+    /*bool*/ int is_text;
+    /*bool*/ int is_halo;
+    /*bool*/ int pitch_with_map;
+    /*bool*/ int is_size_zoom_constant;
+    /*bool*/ int is_size_feature_constant;
+    float size_t;
+    float size;
+    float padding;
+};
+static_assert(sizeof(SymbolDrawableTilePropsUBO) == 2 * 16, "unexpected padding");
+
+struct alignas(16) SymbolDrawableInterpolateUBO {
+    float fill_color_t;
+    float halo_color_t;
+    float opacity_t;
+    float halo_width_t;
+    float halo_blur_t;
+    float pad1, pad2, pad3;
+};
+static_assert(sizeof(SymbolDrawableInterpolateUBO) == 32, "unexpected padding");
+
+struct alignas(16) SymbolDrawableUBO {
+    float4x4 matrix;
+    float4x4 label_plane_matrix;
+    float4x4 coord_matrix;
+
+    float2 texsize;
+    float2 texsize_icon;
+
+    float gamma_scale;
+    float device_pixel_ratio;
+
+    float camera_to_center_distance;
+    float pitch;
+    /*bool*/ int rotate_symbol;
+    float aspect_ratio;
+    float fade_change;
+    float pad;
+};
+static_assert(sizeof(SymbolDrawableUBO) == 15 * 16, "unexpected padding");
+
+struct alignas(16) SymbolDrawablePaintUBO {
+    float4 fill_color;
+    float4 halo_color;
+    float opacity;
+    float halo_width;
+    float halo_blur;
+    float padding;
+};
+static_assert(sizeof(SymbolDrawablePaintUBO) == 3 * 16, "unexpected padding");
+
+struct alignas(16) SymbolPermutationUBO {
+    Attribute fill_color;
+    Attribute halo_color;
+    Attribute opacity;
+    Attribute halo_width;
+    Attribute halo_blur;
+    int32_t /*bool*/ overdrawInspector;
+    float pad1, pad2, pad3;
+};
+static_assert(sizeof(SymbolPermutationUBO) == 4 * 16, "unexpected padding");
 
 )";
 
