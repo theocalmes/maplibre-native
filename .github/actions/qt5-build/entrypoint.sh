@@ -14,8 +14,5 @@ cmake ../source/ \
   -DCMAKE_BUILD_TYPE="Release" \
   -DCMAKE_C_COMPILER_LAUNCHER="ccache" \
   -DCMAKE_CXX_COMPILER_LAUNCHER="ccache" \
-  -DCMAKE_INSTALL_PREFIX=../install \
-  -DMLN_WITH_QT=ON \
-  -DMLN_QT_DEPLOYMENT=ON
+  -DMLN_WITH_QT=ON
 ninja
-ninja install
