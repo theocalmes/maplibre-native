@@ -1,0 +1,64 @@
+name: linux-ci
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - '*'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  # INFO: We are cancelling the concurrency group if the change is on PR. For workflow dispatch, this will not work.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  id-token: write         # needed for AWS
+  actions: read           # needed for CodeQL
+  contents: read          # needed for CodeQL
+  security-events: write  # needed for CodeQL
+
+jobs:
+  linux-build-and-test:
+    runs-on: MapLibre_Native_Linux_16_core
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Get latest CMake and Ninja
+        uses: lukka/get-cmake@latest
+        with:
+          cmakeVersion: 3.24.1
+          ninjaVersion: latest
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libcurl4-openssl-dev \
+            libuv1-dev \
+            libjpeg-dev \
+            libpng-dev \
+            libglfw3-dev \
+            libwebp-dev \
+            libopengl0
+
+      - name: Build mbgl-render
+        run: |
+          cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -B build-size -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DMLN_DRAWABLE_RENDERER=ON
+          cmake --build build-size --target mbgl-render
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ vars.OIDC_AWS_ROLE_TO_ASSUME }}
+          role-session-name: ${{ github.run_id }}
+
+      - name: Upload mbgl-render to S3
+        run: aws s3 cp build-size/bin/mbgl-render s3://maplibre-native/mbgl-render-d38709084a9865fe0bb8300aec70ebf8243b3d43
