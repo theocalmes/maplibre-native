@@ -50,7 +50,7 @@ jobs:
 
       - name: Build mbgl-render
         run: |
-          cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -B build-size -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DMLN_DRAWABLE_RENDERER=ON
+          cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -B build-size -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo
           cmake --build build-size --target mbgl-render
 
       - name: Configure AWS Credentials
