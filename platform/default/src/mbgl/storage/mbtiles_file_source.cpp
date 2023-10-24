@@ -28,7 +28,7 @@
 #endif
 
 namespace {
-bool acceptsURL(const std::string &url) {
+bool acceptsMBTilesURL(const std::string &url) {
     return 0 == url.rfind(mbgl::util::MBTILES_PROTOCOL, 0);
 }
 
@@ -313,7 +313,7 @@ std::unique_ptr<AsyncRequest> MBTilesFileSource::request(const Resource &resourc
 }
 
 bool MBTilesFileSource::canRequest(const Resource &resource) const {
-    return acceptsURL(resource.url);
+    return acceptsMBTilesURL(resource.url);
 }
 
 MBTilesFileSource::~MBTilesFileSource() = default;

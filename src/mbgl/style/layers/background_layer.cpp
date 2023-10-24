@@ -12,6 +12,7 @@
 #include <mbgl/style/conversion/json.hpp>
 #include <mbgl/style/conversion_impl.hpp>
 #include <mbgl/util/traits.hpp>
+#include <mbgl/util/enum.hpp>
 
 #include <mapbox/eternal.hpp>
 
@@ -150,7 +151,8 @@ using namespace conversion;
 
 namespace {
 
-constexpr uint8_t kPaintPropertyCount = 6u;
+
+constexpr uint8_t kPaintPropertyCountBackground = 6u;
 
 
 enum class BackgroundProperty : uint8_t {
@@ -161,11 +163,6 @@ enum class BackgroundProperty : uint8_t {
     BackgroundOpacityTransition,
     BackgroundPatternTransition,
 };
-
-template <typename T>
-constexpr uint8_t toUint8(T t) noexcept {
-    return uint8_t(mbgl::underlying_type(t));
-}
 
 
 constexpr const auto backgroundLayerProperties = mapbox::eternal::hash_map<mapbox::eternal::string, uint8_t>(
@@ -210,7 +207,7 @@ Value BackgroundLayer::serialize() const {
     for (const auto& property : backgroundLayerProperties) {
         auto styleProperty = getLayerProperty(*this, static_cast<BackgroundProperty>(property.second));
         if (styleProperty.getKind() == StyleProperty::Kind::Undefined) continue;
-        serializeProperty(result, styleProperty, property.first.c_str(), property.second < kPaintPropertyCount);
+        serializeProperty(result, styleProperty, property.first.c_str(), property.second < kPaintPropertyCountBackground);
     }
     return result;
 }

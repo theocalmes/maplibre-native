@@ -5,6 +5,8 @@
 #include <string>
 #include <optional>
 
+#include <mbgl/util/traits.hpp>
+
 namespace mbgl {
 
 template <typename T>
@@ -33,5 +35,10 @@ public:
             std::begin(T##_names), std::end(T##_names), [&](const auto& v) { return s == v.second; }); \
         return it == std::end(T##_names) ? std::optional<T>() : it->first;                             \
     }
+
+template <typename T>
+constexpr uint8_t toUint8(T t) noexcept {
+    return uint8_t(mbgl::underlying_type(t));
+}
 
 } // namespace mbgl

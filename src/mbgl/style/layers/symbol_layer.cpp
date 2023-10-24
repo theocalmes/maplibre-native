@@ -12,6 +12,7 @@
 #include <mbgl/style/conversion/json.hpp>
 #include <mbgl/style/conversion_impl.hpp>
 #include <mbgl/util/traits.hpp>
+#include <mbgl/util/enum.hpp>
 
 #include <mapbox/eternal.hpp>
 
@@ -1063,7 +1064,8 @@ using namespace conversion;
 
 namespace {
 
-constexpr uint8_t kPaintPropertyCount = 28u;
+
+constexpr uint8_t kPaintPropertyCountSymbol = 28u;
 
 
 enum class SymbolProperty : uint8_t {
@@ -1095,7 +1097,7 @@ enum class SymbolProperty : uint8_t {
     TextOpacityTransition,
     TextTranslateTransition,
     TextTranslateAnchorTransition,
-    IconAllowOverlap = kPaintPropertyCount,
+    IconAllowOverlap = kPaintPropertyCountSymbol,
     IconAnchor,
     IconIgnorePlacement,
     IconImage,
@@ -1137,11 +1139,6 @@ enum class SymbolProperty : uint8_t {
     TextVariableAnchor,
     TextWritingMode,
 };
-
-template <typename T>
-constexpr uint8_t toUint8(T t) noexcept {
-    return uint8_t(mbgl::underlying_type(t));
-}
 
 
 constexpr const auto symbolLayerProperties = mapbox::eternal::hash_map<mapbox::eternal::string, uint8_t>(
@@ -1375,7 +1372,7 @@ Value SymbolLayer::serialize() const {
     for (const auto& property : symbolLayerProperties) {
         auto styleProperty = getLayerProperty(*this, static_cast<SymbolProperty>(property.second));
         if (styleProperty.getKind() == StyleProperty::Kind::Undefined) continue;
-        serializeProperty(result, styleProperty, property.first.c_str(), property.second < kPaintPropertyCount);
+        serializeProperty(result, styleProperty, property.first.c_str(), property.second < kPaintPropertyCountSymbol);
     }
     return result;
 }

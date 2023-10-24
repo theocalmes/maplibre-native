@@ -12,6 +12,7 @@
 #include <mbgl/style/conversion/json.hpp>
 #include <mbgl/style/conversion_impl.hpp>
 #include <mbgl/util/traits.hpp>
+#include <mbgl/util/enum.hpp>
 
 #include <mapbox/eternal.hpp>
 
@@ -206,7 +207,8 @@ using namespace conversion;
 
 namespace {
 
-constexpr uint8_t kPaintPropertyCount = 10u;
+
+constexpr uint8_t kPaintPropertyCountHeatmap = 10u;
 
 
 enum class HeatmapProperty : uint8_t {
@@ -221,11 +223,6 @@ enum class HeatmapProperty : uint8_t {
     HeatmapRadiusTransition,
     HeatmapWeightTransition,
 };
-
-template <typename T>
-constexpr uint8_t toUint8(T t) noexcept {
-    return uint8_t(mbgl::underlying_type(t));
-}
 
 
 constexpr const auto heatmapLayerProperties = mapbox::eternal::hash_map<mapbox::eternal::string, uint8_t>(
@@ -282,7 +279,7 @@ Value HeatmapLayer::serialize() const {
     for (const auto& property : heatmapLayerProperties) {
         auto styleProperty = getLayerProperty(*this, static_cast<HeatmapProperty>(property.second));
         if (styleProperty.getKind() == StyleProperty::Kind::Undefined) continue;
-        serializeProperty(result, styleProperty, property.first.c_str(), property.second < kPaintPropertyCount);
+        serializeProperty(result, styleProperty, property.first.c_str(), property.second < kPaintPropertyCountHeatmap);
     }
     return result;
 }

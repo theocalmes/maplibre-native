@@ -12,6 +12,7 @@
 #include <mbgl/style/conversion/json.hpp>
 #include <mbgl/style/conversion_impl.hpp>
 #include <mbgl/util/traits.hpp>
+#include <mbgl/util/enum.hpp>
 
 #include <mapbox/eternal.hpp>
 
@@ -385,7 +386,8 @@ using namespace conversion;
 
 namespace {
 
-constexpr uint8_t kPaintPropertyCount = 20u;
+
+constexpr uint8_t kPaintPropertyCountLocationIndicator = 20u;
 
 
 enum class LocationIndicatorProperty : uint8_t {
@@ -409,15 +411,10 @@ enum class LocationIndicatorProperty : uint8_t {
     PerspectiveCompensationTransition,
     ShadowImageSizeTransition,
     TopImageSizeTransition,
-    BearingImage = kPaintPropertyCount,
+    BearingImage = kPaintPropertyCountLocationIndicator,
     ShadowImage,
     TopImage,
 };
-
-template <typename T>
-constexpr uint8_t toUint8(T t) noexcept {
-    return uint8_t(mbgl::underlying_type(t));
-}
 
 
 constexpr const auto locationIndicatorLayerProperties = mapbox::eternal::hash_map<mapbox::eternal::string, uint8_t>(
@@ -513,7 +510,7 @@ Value LocationIndicatorLayer::serialize() const {
     for (const auto& property : locationIndicatorLayerProperties) {
         auto styleProperty = getLayerProperty(*this, static_cast<LocationIndicatorProperty>(property.second));
         if (styleProperty.getKind() == StyleProperty::Kind::Undefined) continue;
-        serializeProperty(result, styleProperty, property.first.c_str(), property.second < kPaintPropertyCount);
+        serializeProperty(result, styleProperty, property.first.c_str(), property.second < kPaintPropertyCountLocationIndicator);
     }
     return result;
 }

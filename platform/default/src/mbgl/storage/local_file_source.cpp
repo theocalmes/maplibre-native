@@ -12,7 +12,7 @@
 #include <mbgl/storage/resource_options.hpp>
 
 namespace {
-bool acceptsURL(const std::string& url) {
+bool acceptsLocalFileSourceURL(const std::string& url) {
     return 0 == url.rfind(mbgl::util::FILE_PROTOCOL, 0);
 }
 } // namespace
@@ -26,7 +26,7 @@ public:
           clientOptions(clientOptions_.clone()) {}
 
     void request(const std::string& url, const ActorRef<FileSourceRequest>& req) {
-        if (!acceptsURL(url)) {
+        if (!acceptsLocalFileSourceURL(url)) {
             Response response;
             response.error = std::make_unique<Response::Error>(Response::Error::Reason::Other, "Invalid file URL");
             req.invoke(&FileSourceRequest::setResponse, response);
@@ -83,7 +83,7 @@ std::unique_ptr<AsyncRequest> LocalFileSource::request(const Resource& resource,
 }
 
 bool LocalFileSource::canRequest(const Resource& resource) const {
-    return acceptsURL(resource.url);
+    return acceptsLocalFileSourceURL(resource.url);
 }
 
 void LocalFileSource::pause() {

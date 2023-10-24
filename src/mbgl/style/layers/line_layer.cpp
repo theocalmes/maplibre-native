@@ -12,6 +12,7 @@
 #include <mbgl/style/conversion/json.hpp>
 #include <mbgl/style/conversion_impl.hpp>
 #include <mbgl/util/traits.hpp>
+#include <mbgl/util/enum.hpp>
 
 #include <mapbox/eternal.hpp>
 
@@ -443,7 +444,8 @@ using namespace conversion;
 
 namespace {
 
-constexpr uint8_t kPaintPropertyCount = 22u;
+
+constexpr uint8_t kPaintPropertyCountLine = 22u;
 
 
 enum class LineProperty : uint8_t {
@@ -469,17 +471,12 @@ enum class LineProperty : uint8_t {
     LineTranslateTransition,
     LineTranslateAnchorTransition,
     LineWidthTransition,
-    LineCap = kPaintPropertyCount,
+    LineCap = kPaintPropertyCountLine,
     LineJoin,
     LineMiterLimit,
     LineRoundLimit,
     LineSortKey,
 };
-
-template <typename T>
-constexpr uint8_t toUint8(T t) noexcept {
-    return uint8_t(mbgl::underlying_type(t));
-}
 
 
 constexpr const auto lineLayerProperties = mapbox::eternal::hash_map<mapbox::eternal::string, uint8_t>(
@@ -587,7 +584,7 @@ Value LineLayer::serialize() const {
     for (const auto& property : lineLayerProperties) {
         auto styleProperty = getLayerProperty(*this, static_cast<LineProperty>(property.second));
         if (styleProperty.getKind() == StyleProperty::Kind::Undefined) continue;
-        serializeProperty(result, styleProperty, property.first.c_str(), property.second < kPaintPropertyCount);
+        serializeProperty(result, styleProperty, property.first.c_str(), property.second < kPaintPropertyCountLine);
     }
     return result;
 }

@@ -4,7 +4,7 @@
 
 namespace mbgl {
 
-static constexpr uint32_t glyphPadding = 1;
+static constexpr uint32_t glyphAtlasPadding = 1;
 
 GlyphAtlas makeGlyphAtlas(const GlyphMap& glyphs) {
     GlyphAtlas result;
@@ -21,15 +21,16 @@ GlyphAtlas makeGlyphAtlas(const GlyphMap& glyphs) {
             if (entry.second && (*entry.second)->bitmap.valid()) {
                 const Glyph& glyph = **entry.second;
 
-                const mapbox::Bin& bin = *pack.packOne(
-                    -1, glyph.bitmap.size.width + 2 * glyphPadding, glyph.bitmap.size.height + 2 * glyphPadding);
+                const mapbox::Bin& bin = *pack.packOne(-1,
+                                                       glyph.bitmap.size.width + 2 * glyphAtlasPadding,
+                                                       glyph.bitmap.size.height + 2 * glyphAtlasPadding);
 
                 result.image.resize({static_cast<uint32_t>(pack.width()), static_cast<uint32_t>(pack.height())});
 
                 AlphaImage::copy(glyph.bitmap,
                                  result.image,
                                  {0, 0},
-                                 {bin.x + glyphPadding, bin.y + glyphPadding},
+                                 {bin.x + glyphAtlasPadding, bin.y + glyphAtlasPadding},
                                  glyph.bitmap.size);
 
                 positions.emplace(glyph.id,
