@@ -7,10 +7,12 @@ global.iff = function (condition, val) {
   return condition() ? val : "";
 };
 
-global.camelize = function (str) {
-  return str.replace(/(?:^|-)(.)/g, function (_, x) {
+global.camelize = function (str, pascalCase = true) {
+  /** @type {string} */
+  const pascalCaseStr = str.replace(/(?:^|-)(.)/g, function (_, x) {
     return x.toUpperCase();
   });
+  return pascalCase ? pascalCaseStr : pascalCaseStr.charAt(0).toLowerCase() + pascalCaseStr.slice(1);
 };
 
 global.camelizeWithLeadingLowercase = function (str) {
