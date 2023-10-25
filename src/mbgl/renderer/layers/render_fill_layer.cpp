@@ -56,7 +56,7 @@ const StringIdentity idPosAttribName = stringIndexer().get("a_pos");
 const StringIdentity idIconTextureName = stringIndexer().get("u_image");
 #endif // MLN_DRAWABLE_RENDERER
 
-inline const FillLayer::Impl& impl_cast(const Immutable<style::Layer::Impl>& impl) {
+inline const FillLayer::Impl& render_fill_layer_impl_cast(const Immutable<style::Layer::Impl>& impl) {
     assert(impl->getTypeInfo() == FillLayer::Impl::staticTypeInfo());
     return static_cast<const FillLayer::Impl&>(*impl);
 }
@@ -65,12 +65,12 @@ inline const FillLayer::Impl& impl_cast(const Immutable<style::Layer::Impl>& imp
 
 RenderFillLayer::RenderFillLayer(Immutable<style::FillLayer::Impl> _impl)
     : RenderLayer(makeMutable<FillLayerProperties>(std::move(_impl))),
-      unevaluated(impl_cast(baseImpl).paint.untransitioned()) {}
+      unevaluated(render_fill_layer_impl_cast(baseImpl).paint.untransitioned()) {}
 
 RenderFillLayer::~RenderFillLayer() = default;
 
 void RenderFillLayer::transition(const TransitionParameters& parameters) {
-    unevaluated = impl_cast(baseImpl).paint.transitioned(parameters, std::move(unevaluated));
+    unevaluated = render_fill_layer_impl_cast(baseImpl).paint.transitioned(parameters, std::move(unevaluated));
 }
 
 void RenderFillLayer::evaluate(const PropertyEvaluationParameters& parameters) {

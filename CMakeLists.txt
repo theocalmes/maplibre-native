@@ -1055,11 +1055,11 @@ if(MLN_WITH_OPENGL)
     )
     list(APPEND 
         SRC_FILES
-            ${PROJECT_SOURCE_DIR}/src/mbgl/gl/enum.cpp
             ${PROJECT_SOURCE_DIR}/src/mbgl/gl/attribute.cpp
             ${PROJECT_SOURCE_DIR}/src/mbgl/gl/attribute.hpp
             ${PROJECT_SOURCE_DIR}/src/mbgl/gl/command_encoder.cpp
             ${PROJECT_SOURCE_DIR}/src/mbgl/gl/command_encoder.hpp
+            ${PROJECT_SOURCE_DIR}/src/mbgl/gl/enum.cpp
             ${PROJECT_SOURCE_DIR}/src/mbgl/gl/context.cpp
             ${PROJECT_SOURCE_DIR}/src/mbgl/gl/context.hpp
             ${PROJECT_SOURCE_DIR}/src/mbgl/style/layers/custom_layer.cpp

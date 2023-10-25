@@ -46,7 +46,7 @@ const StringIdentity idIconTextureName = stringIndexer().get("u_image");
 
 #endif // MLN_DRAWABLE_RENDERER
 
-inline const FillExtrusionLayer::Impl& impl_cast(const Immutable<style::Layer::Impl>& impl) {
+inline const FillExtrusionLayer::Impl& render_raster_layer_impl_cast(const Immutable<style::Layer::Impl>& impl) {
     assert(impl->getTypeInfo() == FillExtrusionLayer::Impl::staticTypeInfo());
     return static_cast<const FillExtrusionLayer::Impl&>(*impl);
 }
@@ -55,12 +55,12 @@ inline const FillExtrusionLayer::Impl& impl_cast(const Immutable<style::Layer::I
 
 RenderFillExtrusionLayer::RenderFillExtrusionLayer(Immutable<style::FillExtrusionLayer::Impl> _impl)
     : RenderLayer(makeMutable<FillExtrusionLayerProperties>(std::move(_impl))),
-      unevaluated(impl_cast(baseImpl).paint.untransitioned()) {}
+      unevaluated(render_raster_layer_impl_cast(baseImpl).paint.untransitioned()) {}
 
 RenderFillExtrusionLayer::~RenderFillExtrusionLayer() = default;
 
 void RenderFillExtrusionLayer::transition(const TransitionParameters& parameters) {
-    unevaluated = impl_cast(baseImpl).paint.transitioned(parameters, std::move(unevaluated));
+    unevaluated = render_raster_layer_impl_cast(baseImpl).paint.transitioned(parameters, std::move(unevaluated));
 }
 
 void RenderFillExtrusionLayer::evaluate(const PropertyEvaluationParameters& parameters) {

@@ -33,7 +33,7 @@ using namespace style;
 
 namespace {
 
-inline const HillshadeLayer::Impl& impl_cast(const Immutable<style::Layer::Impl>& impl) {
+inline const HillshadeLayer::Impl& hillshade_layer_impl_cast(const Immutable<style::Layer::Impl>& impl) {
     assert(impl->getTypeInfo() == HillshadeLayer::Impl::staticTypeInfo());
     return static_cast<const HillshadeLayer::Impl&>(*impl);
 }
@@ -42,7 +42,7 @@ inline const HillshadeLayer::Impl& impl_cast(const Immutable<style::Layer::Impl>
 
 RenderHillshadeLayer::RenderHillshadeLayer(Immutable<style::HillshadeLayer::Impl> _impl)
     : RenderLayer(makeMutable<HillshadeLayerProperties>(std::move(_impl))),
-      unevaluated(impl_cast(baseImpl).paint.untransitioned()) {}
+      unevaluated(hillshade_layer_impl_cast(baseImpl).paint.untransitioned()) {}
 
 RenderHillshadeLayer::~RenderHillshadeLayer() = default;
 
@@ -61,7 +61,7 @@ std::array<float, 2> RenderHillshadeLayer::getLight(const PaintParameters& param
 }
 
 void RenderHillshadeLayer::transition(const TransitionParameters& parameters) {
-    unevaluated = impl_cast(baseImpl).paint.transitioned(parameters, std::move(unevaluated));
+    unevaluated = hillshade_layer_impl_cast(baseImpl).paint.transitioned(parameters, std::move(unevaluated));
 }
 
 void RenderHillshadeLayer::evaluate(const PropertyEvaluationParameters& parameters) {

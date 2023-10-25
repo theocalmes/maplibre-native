@@ -31,7 +31,7 @@ using namespace style;
 
 namespace {
 
-inline const BackgroundLayer::Impl& impl_cast(const Immutable<style::Layer::Impl>& impl) {
+inline const BackgroundLayer::Impl& background_layer_impl_cast(const Immutable<style::Layer::Impl>& impl) {
     assert(impl->getTypeInfo() == BackgroundLayer::Impl::staticTypeInfo());
     return static_cast<const style::BackgroundLayer::Impl&>(*impl);
 }
@@ -40,12 +40,12 @@ inline const BackgroundLayer::Impl& impl_cast(const Immutable<style::Layer::Impl
 
 RenderBackgroundLayer::RenderBackgroundLayer(Immutable<style::BackgroundLayer::Impl> _impl)
     : RenderLayer(makeMutable<BackgroundLayerProperties>(std::move(_impl))),
-      unevaluated(impl_cast(baseImpl).paint.untransitioned()) {}
+      unevaluated(background_layer_impl_cast(baseImpl).paint.untransitioned()) {}
 
 RenderBackgroundLayer::~RenderBackgroundLayer() = default;
 
 void RenderBackgroundLayer::transition(const TransitionParameters& parameters) {
-    unevaluated = impl_cast(baseImpl).paint.transitioned(parameters, std::move(unevaluated));
+    unevaluated = background_layer_impl_cast(baseImpl).paint.transitioned(parameters, std::move(unevaluated));
 }
 
 void RenderBackgroundLayer::evaluate(const PropertyEvaluationParameters& parameters) {
